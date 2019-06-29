@@ -85,8 +85,8 @@ ff02::2 ip6-allrouters
 ## Todo
 
 * Peer-review from a real Go developper.. I should stick to Python, I know.
-* ~Set a DEBUG option, clean code
-* merge client/listener in one
+* ~~Set a DEBUG option, clean code~~
+* ~~merge client/listener in one~~
 * automatic deployment of generated certs (DNS TXT? :P)
 * Actually have crypto in cryptopayload module
 
