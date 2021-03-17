@@ -1,3 +1,5 @@
+[![CodeQL](https://github.com/sourcefrenchy/certexfil/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/sourcefrenchy/certexfil/actions/workflows/codeql-analysis.yml)
+
 # Exfiltration fun using X509 digital certificates
 
 ## Overview
