@@ -5,3 +5,4 @@ certexfil
 
 .DS_Store
 CERTS/*
+go.sum
