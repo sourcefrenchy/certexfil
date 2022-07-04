@@ -1,4 +1,7 @@
+go.sum
 .idea/*
 payload.bin
 certexfil
 
+.DS_Store
+CERTS/*
