@@ -1,1 +1,0 @@
-/opt/homebrew/Cellar/go/1.18.3/libexec/src/crypto/tls/common.go

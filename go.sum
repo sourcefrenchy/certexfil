@@ -1,2 +1,8 @@
-github.com/sourcefrenchy/cryptopayload v0.0.0-20210414142421-ed28ba1ec2fa h1:m8j7ZY4pnrAkGaaoeEeY92uVxmvzFZki4gXdPE0wFZc=
-github.com/sourcefrenchy/cryptopayload v0.0.0-20210414142421-ed28ba1ec2fa/go.mod h1:6WUIof+y1m17nR7GuVMMuYpkiCxy0BTtedyCQwpnq4g=
+github.com/corpix/uarand v0.0.0-20170723150923-031be390f409 h1:9A+mfQmwzZ6KwUXPc8nHxFtKgn9VIvO3gXAOspIcE3s=
+github.com/corpix/uarand v0.0.0-20170723150923-031be390f409/go.mod h1:JSm890tOkDN+M1jqN8pUGDKnzJrsVbJwSMHBY4zwz7M=
+github.com/elorimer/gotls v0.0.0-20150605190213-c5a0da12c464 h1:OWl4IHpeo9qyTHC3iKYvhiL6+FrKT0FpWiNQPFTeBrw=
+github.com/elorimer/gotls v0.0.0-20150605190213-c5a0da12c464/go.mod h1:P57jl7bQmIDCGHZQrvovTgjnebgL4LfvaP3u0j8X/Ys=
+github.com/icrowley/fake v0.0.0-20220625154756-3c7517006344 h1:gvlL0h+DFa2eX4rLg/lbtBV4z81p1qHGcvPIpWtlXn0=
+github.com/icrowley/fake v0.0.0-20220625154756-3c7517006344/go.mod h1:dQ6TM/OGAe+cMws81eTe4Btv1dKxfPZ2CX+YaAFAPN4=
+github.com/sourcefrenchy/cryptopayload v0.0.0-20220703163539-8a83ea88aec2 h1:qtVcuFD9rbT+6pqNauQ/h6B7hroO6G/BCz1GFTHXSAk=
+github.com/sourcefrenchy/cryptopayload v0.0.0-20220703163539-8a83ea88aec2/go.mod h1:6WUIof+y1m17nR7GuVMMuYpkiCxy0BTtedyCQwpnq4g=
