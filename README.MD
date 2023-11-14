@@ -32,7 +32,7 @@ Ensure the certexfil binary and ./CERTS directory are on your remote server. The
 remoteserver$ ./certexfil --listen
 ```
 
-Client or Simulated Compromised Host
+### Client or Simulated Compromised Host
 
 Embedding output as a payload:
 
