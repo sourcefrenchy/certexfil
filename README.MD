@@ -6,7 +6,7 @@ My extensive exploration into data exfiltration and related countermeasures has 
 
 Further details can be found at [this Medium article](https://medium.com/@jeanmichel.amblat/abusing-certificates-for-data-exfiltration-d6bff2533cd0).
 
-For those new to certificate manipulation, these insightful resources are recommended:
+For those new to certificates and mTLS, these insightful resources are recommended:
 
 * [TLS, X509, and Mutual Authentication Explained](https://medium.com/sitewards/the-magic-of-tls-x509-and-mutual-authentication-explained-b2162dec4401)
 * [A Step-by-Step Guide to mTLS in Go](https://venilnoronha.io/a-step-by-step-guide-to-mtls-in-go)
