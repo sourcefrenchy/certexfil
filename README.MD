@@ -2,7 +2,7 @@
 
 ## Overview
 
-My extensive exploration into data exfiltration and related countermeasures has led to this initial foray into Go. The aim is to devise a swift method for transforming a payload (via file reading) into a custom x509 digital certificate.
+My exploration into data exfiltration and related countermeasures has led to this initial foray into Go. The aim is to devise a swift method for transforming a payload (via file reading) into a custom x509 digital certificate.
 
 Further details can be found at [this Medium article](https://medium.com/@jeanmichel.amblat/abusing-certificates-for-data-exfiltration-d6bff2533cd0).
 
@@ -33,7 +33,6 @@ remoteserver$ ./certexfil --listen
 ```
 
 ### Client or Simulated Compromised Host
-
 Embedding output as a payload:
 
 ```shell
@@ -44,7 +43,6 @@ Embedding output as a payload:
 2019/05/31 18:48:27 [*] Generated custom cert with payload
 Oo
 ```
-This format should make it easier to use as a README or other documentation.
 
 ## Contact
 
