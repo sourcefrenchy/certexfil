@@ -2,11 +2,11 @@
 
 ## Overview
 
-My exploration into data exfiltration and related countermeasures has led to this initial foray into Go. The aim is to devise a swift method for transforming a payload (via file reading) into a custom x509 digital certificate.
+This project represents my initial venture into the Go programming language, focusing on data exfiltration techniques and their countermeasures. The primary goal is to develop a fun way to hide data by encoding a payload into a custom x509 digital certificate by reading from a file.
 
-Further details can be found at [this Medium article](https://medium.com/@jeanmichel.amblat/abusing-certificates-for-data-exfiltration-d6bff2533cd0).
+For an in-depth discussion on the topic, refer to my Medium article: [Abusing Certificates for Data Exfiltration](https://medium.com/@jeanmichel.amblat/abusing-certificates-for-data-exfiltration-d6bff2533cd0).
 
-For those new to certificates and mTLS, these insightful resources are recommended:
+For those unfamiliar with the concepts of certificates and mutual TLS (mTLS), I recommend the following resources for a thorough understanding:
 
 * [TLS, X509, and Mutual Authentication Explained](https://medium.com/sitewards/the-magic-of-tls-x509-and-mutual-authentication-explained-b2162dec4401)
 * [A Step-by-Step Guide to mTLS in Go](https://venilnoronha.io/a-step-by-step-guide-to-mtls-in-go)
